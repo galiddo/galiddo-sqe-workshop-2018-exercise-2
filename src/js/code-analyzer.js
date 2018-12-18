@@ -5,11 +5,14 @@ let VARS = {};
 let IV = [];
 let RedLines=[];
 let GreenLines=[];
+let LinesDelete = [];
+let count=0;
 const parseCode = (codeToParse,inputV) => {
     VARS={};
     IV=[];
     RedLines=[];
     GreenLines=[];
+    LinesDelete = [];
     inputV.split(',').forEach(function (body) {
         IV.push(body);
 
@@ -24,7 +27,13 @@ const parseCode = (codeToParse,inputV) => {
     GreenLines.forEach(function (body) {
         r[body] = '<span style="background-color:green">'+r[body]+'</span>';
     });
+    LinesDelete.forEach(function (body){
+        r.splice(body,1);
+    });
+
+
     t=r.join('\n');
+    t = t.replace('\n\n','\n');
     return t;
 };
 
@@ -86,6 +95,7 @@ const exProgram = (parsedcode) => {
 };
 
 const exTor = (body) => {
+    LinesDelete.push(body.loc.start.line-1);
     if((body.init.type==='Identifier'||body.init.type ==='Literal') &&VARS[body.id.name])
         body.init = VARS[body.init.name];
     else
@@ -97,6 +107,8 @@ const exTion = (declaration) => {
 
     declaration.declarations.forEach(function (body) {
         exTor(body);
+
+        count++;
 
     });
 
@@ -143,6 +155,8 @@ const exAss = (parsedcode) => {
         replaceHandler(parsedcode.right);
 
     VARS[parsedcode.left.name] = parsedcode.right;
+    LinesDelete.push(parsedcode.loc.start.line-1);
+    count++;
 
 };
 
